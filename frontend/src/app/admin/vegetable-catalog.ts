@@ -6,6 +6,8 @@ export interface VegetableTemplate {
   /** Photo file name in the API's /images/catalog folder. */
   key: string;
   name: string;
+  /** Telugu name, shown as "Tomato / టమాటా". */
+  te: string;
   category: CategorySlug;
   unit: ProductUnit;
   price: number;
@@ -15,10 +17,24 @@ export interface VegetableTemplate {
   description: string;
 }
 
+const TELUGU: Record<string, string> = {
+  'tomato': 'టమాటా', 'onion': 'ఉల్లిపాయ', 'potato': 'బంగాళాదుంప', 'green-chilli': 'పచ్చి మిరపకాయ', 'carrot': 'క్యారెట్',
+  'beans': 'బీన్స్', 'cabbage': 'క్యాబేజీ', 'cauliflower': 'కాలీఫ్లవర్', 'brinjal': 'వంకాయ', 'spinach': 'పాలకూర',
+  'coriander': 'కొత్తిమీర', 'mint': 'పుదీనా', 'cucumber': 'దోసకాయ', 'capsicum': 'క్యాప్సికమ్', 'okra': 'బెండకాయ',
+  'beetroot': 'బీట్‌రూట్', 'bottle-gourd': 'సొరకాయ', 'pumpkin': 'గుమ్మడికాయ', 'garlic': 'వెల్లుల్లి', 'ginger': 'అల్లం',
+  'radish': 'ముల్లంగి', 'broccoli': 'బ్రోకలీ', 'green-peas': 'పచ్చి బఠాణీ', 'bitter-gourd': 'కాకరకాయ', 'ridge-gourd': 'బీరకాయ',
+  'snake-gourd': 'పొట్లకాయ', 'drumstick': 'మునగకాయ', 'sweet-potato': 'చిలగడదుంప', 'raw-banana': 'అరటికాయ', 'colocasia': 'చామదుంప',
+  'yam': 'కంద', 'curry-leaves': 'కరివేపాకు', 'fenugreek': 'మెంతికూర', 'amaranth': 'తోటకూర', 'spring-onion': 'ఉల్లికాడలు',
+  'lemon': 'నిమ్మకాయ', 'cluster-beans': 'గోరుచిక్కుడు', 'ivy-gourd': 'దొండకాయ', 'pointed-gourd': 'పర్వల్', 'sweet-corn': 'మొక్కజొన్న',
+  'mushroom': 'పుట్టగొడుగులు', 'lettuce': 'లెట్యూస్', 'zucchini': 'జుకినీ', 'red-cabbage': 'ఎర్ర క్యాబేజీ', 'turnip': 'టర్నిప్',
+  'flat-beans': 'చిక్కుడుకాయ', 'raw-mango': 'మామిడికాయ', 'dill': 'సోయకూర', 'cherry-tomato': 'చెర్రీ టమాటా', 'shallots': 'చిన్న ఉల్లిపాయ',
+  'red-capsicum': 'ఎర్ర క్యాప్సికమ్', 'yellow-capsicum': 'పసుపు క్యాప్సికమ్',
+};
+
 const kg = (key: string, name: string, category: CategorySlug, price: number, keywords: string[], description: string, step = 0.25, stock = 10): VegetableTemplate =>
-  ({ key, name, category, unit: 'Kg', price, step, stock, keywords, description });
+  ({ key, name, te: TELUGU[key] ?? '', category, unit: 'Kg', price, step, stock, keywords, description });
 const each = (unit: ProductUnit, key: string, name: string, category: CategorySlug, price: number, keywords: string[], description: string, stock = 20): VegetableTemplate =>
-  ({ key, name, category, unit, price, step: 1, stock, keywords, description });
+  ({ key, name, te: TELUGU[key] ?? '', category, unit, price, step: 1, stock, keywords, description });
 
 /** Common Indian vegetables with typical retail prices, used for quick-add and the photo library. */
 export const VEGETABLE_CATALOG: VegetableTemplate[] = [
@@ -80,6 +96,8 @@ export const catalogPhoto = (key: string) => `/images/catalog/${key}.jpg`;
 
 export function matchTemplate(name: string): VegetableTemplate | undefined {
   const n = name.trim().toLowerCase();
+  const byTelugu = n && VEGETABLE_CATALOG.find((t) => t.te === n);
+  if (byTelugu) return byTelugu;
   if (n.length < 3) return undefined;
   const longestFirst = (t: VegetableTemplate) => Math.max(...t.keywords.filter((k) => n.includes(k)).map((k) => k.length), 0);
   return VEGETABLE_CATALOG.map((t) => ({ t, score: longestFirst(t) })).filter((x) => x.score > 0).sort((a, b) => b.score - a.score)[0]?.t;

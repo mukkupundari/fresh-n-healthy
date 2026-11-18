@@ -129,6 +129,7 @@ public static class SeedData
             shop.Products.Add(new Product
             {
                 Name = item.Name,
+                LocalName = TeluguNames.ByImageKey.GetValueOrDefault(item.Image),
                 Description = item.Description,
                 CategoryId = categories[item.Category],
                 ImageUrl = $"/images/catalog/{item.Image}.jpg",

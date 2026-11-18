@@ -24,7 +24,7 @@ public record ShopPublicDto(
     bool DeliveryEnabled, bool PickupEnabled, decimal DeliveryFee, decimal? FreeDeliveryAbove, decimal MinOrderAmount, string DeliveryEta);
 
 public record ProductDto(
-    int Id, int ShopId, int CategoryId, string CategoryName, string CategorySlug, string Name, string? Description, string ImageUrl,
+    int Id, int ShopId, int CategoryId, string CategoryName, string CategorySlug, string Name, string? LocalName, string? Description, string ImageUrl,
     ProductUnit Unit, decimal Price, decimal StockQuantity, decimal MinOrderQuantity, decimal StepQuantity, decimal LowStockThreshold,
     bool IsActive, bool IsFeatured, int SortOrder, DateTime UpdatedAt);
 
@@ -126,6 +126,7 @@ public record BulkCreateProductsResult(int Created);
 
 public record SaveProductRequest(
     [Required, MinLength(2), MaxLength(100)] string Name,
+    [MaxLength(100, ErrorMessage = "Telugu name must be 100 characters or less.")] string? LocalName,
     [MaxLength(1000)] string? Description,
     [Range(1, int.MaxValue, ErrorMessage = "Choose a category.")] int CategoryId,
     [Required, MaxLength(400)] string ImageUrl,

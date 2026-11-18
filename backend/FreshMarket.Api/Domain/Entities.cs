@@ -119,6 +119,8 @@ public class Product
     public int CategoryId { get; set; }
     public Category? Category { get; set; }
     [MaxLength(100)] public string Name { get; set; } = "";
+    /// <summary>Name in the local language (Telugu), shown next to the English name.</summary>
+    [MaxLength(100)] public string? LocalName { get; set; }
     [MaxLength(1000)] public string? Description { get; set; }
     [MaxLength(400)] public string ImageUrl { get; set; } = "";
     public ProductUnit Unit { get; set; } = ProductUnit.Kg;

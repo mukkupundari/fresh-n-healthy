@@ -22,7 +22,7 @@ export interface ShopPublic {
 
 export interface Product {
   id: number; shopId: number; categoryId: number; categoryName: string; categorySlug: string;
-  name: string; description: string | null; imageUrl: string; unit: ProductUnit; price: number;
+  name: string; localName: string | null; description: string | null; imageUrl: string; unit: ProductUnit; price: number;
   stockQuantity: number; minOrderQuantity: number; stepQuantity: number; lowStockThreshold: number;
   isActive: boolean; isFeatured: boolean; sortOrder: number; updatedAt: string;
 }
@@ -81,7 +81,7 @@ export interface RegistrationCheckResult { ok: boolean; errors: Record<string, s
 export interface RegisterShopResult { shopId: number; shopName: string; username: string; }
 
 export interface SaveProductRequest {
-  name: string; description: string | null; categoryId: number; imageUrl: string; unit: ProductUnit; price: number;
+  name: string; localName: string | null; description: string | null; categoryId: number; imageUrl: string; unit: ProductUnit; price: number;
   stockQuantity: number | null; minOrderQuantity: number; stepQuantity: number; lowStockThreshold: number; isActive: boolean; isFeatured: boolean;
 }
 

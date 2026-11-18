@@ -9,7 +9,7 @@ import { AdminAuth } from '../core/auth';
 import { formatInr, statusLabel } from '../core/format';
 import { Dashboard, OrderStatus, Product } from '../core/models';
 import { AdminRealtime } from '../core/realtime';
-import { InrPipe, QtyPipe, TimeAgoPipe } from '../shared/pipes';
+import { InrPipe, ProductNamePipe, QtyPipe, TimeAgoPipe } from '../shared/pipes';
 import { EmptyStateComponent, PaymentBadgeComponent, StatusBadgeComponent } from '../shared/ui.components';
 import { StockSheetComponent } from './stock-sheet.component';
 
@@ -19,7 +19,7 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [DatePipe, RouterLink, LucideAngularModule, InrPipe, QtyPipe, TimeAgoPipe, StatusBadgeComponent, PaymentBadgeComponent, EmptyStateComponent, StockSheetComponent],
+  imports: [DatePipe, RouterLink, LucideAngularModule, InrPipe, ProductNamePipe, QtyPipe, TimeAgoPipe, StatusBadgeComponent, PaymentBadgeComponent, EmptyStateComponent, StockSheetComponent],
   template: `
     <header class="page-header">
       <div>
@@ -142,7 +142,7 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
               @for (p of d.lowStock; track p.id) {
                 <li>
                   <img class="thumb" [src]="p.imageUrl" alt="" />
-                  <div class="r-main"><strong>{{ p.name }}</strong>
+                  <div class="r-main"><strong>{{ p | productName }}</strong>
                     <small [class.red]="p.stockQuantity <= 0">{{ p.stockQuantity <= 0 ? 'Sold out' : (p.stockQuantity | qty: p.unit) + ' left' }}</small>
                   </div>
                   <button class="btn btn-sm btn-outline" type="button" (click)="stockFor.set(p)"><lucide-icon name="plus" [size]="14" /> Restock</button>

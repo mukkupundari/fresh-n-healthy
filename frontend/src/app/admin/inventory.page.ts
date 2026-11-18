@@ -10,7 +10,7 @@ import { trimNumber } from '../core/format';
 import { Product, StockMovement, StockMovementReason } from '../core/models';
 import { AdminRealtime } from '../core/realtime';
 import { ToastService } from '../core/toast.service';
-import { QtyPipe, UnitPipe } from '../shared/pipes';
+import { ProductNamePipe, QtyPipe, UnitPipe } from '../shared/pipes';
 import { EmptyStateComponent } from '../shared/ui.components';
 import { stockState } from './products.page';
 import { StockSheetComponent } from './stock-sheet.component';
@@ -25,7 +25,7 @@ const REASON: Record<StockMovementReason, { label: string; tone: string }> = {
 
 @Component({
   selector: 'app-inventory',
-  imports: [DatePipe, FormsModule, RouterLink, LucideAngularModule, QtyPipe, UnitPipe, EmptyStateComponent, StockSheetComponent],
+  imports: [DatePipe, FormsModule, RouterLink, LucideAngularModule, ProductNamePipe, QtyPipe, UnitPipe, EmptyStateComponent, StockSheetComponent],
   template: `
     <header class="page-header">
       <div>
@@ -53,7 +53,7 @@ const REASON: Record<StockMovementReason, { label: string; tone: string }> = {
                 <button type="button" class="row-main" (click)="selectProduct(p.id)">
                   <img class="thumb" [src]="p.imageUrl" alt="" />
                   <div class="info">
-                    <div class="line"><strong>{{ p.name }}</strong><span class="tabular qty" [class]="'tabular qty ' + st.tone">{{ p.stockQuantity | qty: p.unit }}</span></div>
+                    <div class="line"><strong>{{ p | productName }}</strong><span class="tabular qty" [class]="'tabular qty ' + st.tone">{{ p.stockQuantity | qty: p.unit }}</span></div>
                     <div class="bar"><span [style.width.%]="fill(p)" [class]="st.tone"></span></div>
                     <small class="muted">{{ st.label }} · alert at {{ p.lowStockThreshold | qty: p.unit }}</small>
                   </div>
@@ -161,7 +161,7 @@ export class InventoryPage {
     const q = this.search().trim().toLowerCase();
     const rank = (p: Product) => (!p.isActive ? 3 : p.stockQuantity <= 0 ? 0 : p.stockQuantity <= p.lowStockThreshold ? 1 : 2);
     return this.products()
-      .filter((p) => !q || p.name.toLowerCase().includes(q))
+      .filter((p) => !q || p.name.toLowerCase().includes(q) || !!p.localName?.includes(q))
       .sort((a, b) => rank(a) - rank(b) || a.stockQuantity / Math.max(1, a.lowStockThreshold) - b.stockQuantity / Math.max(1, b.lowStockThreshold));
   });
   private unitMap = computed(() => new Map(this.products().map((p) => [p.id, p.unit])));

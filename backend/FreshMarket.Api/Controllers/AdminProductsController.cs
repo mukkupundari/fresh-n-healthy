@@ -247,6 +247,7 @@ public class AdminProductsController(AppDbContext db, OrderService orders, IStor
     private static void Apply(Product p, SaveProductRequest req)
     {
         p.Name = req.Name.Trim();
+        p.LocalName = string.IsNullOrWhiteSpace(req.LocalName) ? null : req.LocalName.Trim();
         p.Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim();
         p.CategoryId = req.CategoryId;
         p.ImageUrl = req.ImageUrl.Trim();

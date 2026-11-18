@@ -223,7 +223,7 @@ export class HomePage {
     const q = this.query().trim().toLowerCase();
     const cat = this.category();
     return this.store.products().filter(
-      (p) => (cat === 'all' || p.categorySlug === cat) && (!q || p.name.toLowerCase().includes(q) || p.categoryName.toLowerCase().includes(q)),
+      (p) => (cat === 'all' || p.categorySlug === cat) && (!q || p.name.toLowerCase().includes(q) || !!p.localName?.includes(q) || p.categoryName.toLowerCase().includes(q)),
     );
   });
 

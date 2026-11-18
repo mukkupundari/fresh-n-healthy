@@ -1,6 +1,16 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { formatInr, formatQty, paymentTone, statusLabel, statusTone, timeAgo, unitShort } from '../core/format';
-import { OrderStatus, PaymentStatus, ProductUnit } from '../core/models';
+import { OrderStatus, PaymentStatus, Product, ProductUnit } from '../core/models';
+
+/** "Tomato / టమాటా" — English name followed by the Telugu name when the shop has set one. */
+export function productName(p: Pick<Product, 'name' | 'localName'>): string {
+  return p.localName ? `${p.name} / ${p.localName}` : p.name;
+}
+
+@Pipe({ name: 'productName' })
+export class ProductNamePipe implements PipeTransform {
+  transform(p: Pick<Product, 'name' | 'localName'>): string { return productName(p); }
+}
 
 @Pipe({ name: 'inr' })
 export class InrPipe implements PipeTransform {

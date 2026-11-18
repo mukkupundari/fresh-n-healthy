@@ -7,14 +7,14 @@ import { formatQty, roundQty } from '../core/format';
 import { Product, StockAdjustMode } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { BottomSheetComponent } from '../shared/bottom-sheet.component';
-import { QtyPipe } from '../shared/pipes';
+import { productName, QtyPipe } from '../shared/pipes';
 
 /** Quick restock / correction for one product. Every change is written to the stock movement log. */
 @Component({
   selector: 'app-stock-sheet',
   imports: [FormsModule, LucideAngularModule, BottomSheetComponent, QtyPipe],
   template: `
-    <app-bottom-sheet [open]="!!product()" [title]="'Update stock'" [subtitle]="product()?.name ?? null" (close)="close.emit()">
+    <app-bottom-sheet [open]="!!product()" [title]="'Update stock'" [subtitle]="product() ? productName(product()!) : null" (close)="close.emit()">
       @if (product(); as p) {
         <div class="body">
           <div class="current">
@@ -73,6 +73,7 @@ import { QtyPipe } from '../shared/pipes';
   `,
 })
 export class StockSheetComponent {
+  protected readonly productName = productName;
   readonly product = input<Product | null>(null);
   readonly close = output<void>();
   readonly saved = output<Product>();

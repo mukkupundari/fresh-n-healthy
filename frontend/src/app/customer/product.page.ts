@@ -5,19 +5,19 @@ import { LucideAngularModule } from 'lucide-angular';
 import { CartStore, lineTotal, maxOrderable } from '../core/cart.store';
 import { formatQty, roundQty } from '../core/format';
 import { ShopStore } from '../core/shop.store';
-import { InrPipe, QtyPipe, UnitPipe } from '../shared/pipes';
+import { InrPipe, ProductNamePipe, QtyPipe, UnitPipe } from '../shared/pipes';
 import { ProductCardComponent, defaultPreset, quantityPresets } from '../shared/product-card.component';
 import { QtyStepperComponent } from '../shared/qty-stepper.component';
 import { EmptyStateComponent } from '../shared/ui.components';
 
 @Component({
   selector: 'app-product',
-  imports: [RouterLink, LucideAngularModule, InrPipe, QtyPipe, UnitPipe, QtyStepperComponent, ProductCardComponent, EmptyStateComponent],
+  imports: [RouterLink, LucideAngularModule, InrPipe, ProductNamePipe, QtyPipe, UnitPipe, QtyStepperComponent, ProductCardComponent, EmptyStateComponent],
   template: `
     @if (product(); as p) {
       <div class="page" [class.sold-out]="soldOut()">
         <div class="visual">
-          <img [src]="p.imageUrl" [alt]="p.name" />
+          <img [src]="p.imageUrl" [alt]="p | productName" />
           @if (soldOut()) { <div class="stamp"><span>Sold out</span></div> }
           <div class="overlay-actions">
             <button class="icon-btn glass" type="button" (click)="back()" aria-label="Go back"><lucide-icon name="arrow-left" [size]="20" /></button>
@@ -33,7 +33,7 @@ import { EmptyStateComponent } from '../shared/ui.components';
           <div class="title-row">
             <div>
               <span class="cat">{{ p.categoryName }}</span>
-              <h1 class="display">{{ p.name }}</h1>
+              <h1 class="display">{{ p | productName }}</h1>
             </div>
             <div class="price">
               <span class="amount">{{ p.price | inr }}</span>

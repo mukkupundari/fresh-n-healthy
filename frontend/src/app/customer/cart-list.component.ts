@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { CartStore, maxOrderable } from '../core/cart.store';
-import { InrPipe, UnitPipe } from '../shared/pipes';
+import { InrPipe, ProductNamePipe, UnitPipe } from '../shared/pipes';
 import { QtyStepperComponent } from '../shared/qty-stepper.component';
 
 @Component({
   selector: 'app-cart-list',
-  imports: [LucideAngularModule, InrPipe, UnitPipe, QtyStepperComponent],
+  imports: [LucideAngularModule, InrPipe, ProductNamePipe, UnitPipe, QtyStepperComponent],
   template: `
     <ul class="lines">
       @for (item of cart.items(); track item.product.id) {
@@ -14,7 +14,7 @@ import { QtyStepperComponent } from '../shared/qty-stepper.component';
           <img [src]="item.product.imageUrl" [alt]="item.product.name" />
           <div class="info">
             <div class="top">
-              <h4>{{ item.product.name }}</h4>
+              <h4>{{ item.product | productName }}</h4>
               <button class="remove" type="button" (click)="cart.remove(item.product)" [attr.aria-label]="'Remove ' + item.product.name">
                 <lucide-icon name="trash-2" [size]="16" />
               </button>

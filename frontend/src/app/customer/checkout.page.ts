@@ -11,7 +11,7 @@ import { formatQty, uuid } from '../core/format';
 import { FulfillmentType, Order, PaymentMethod, StockIssue } from '../core/models';
 import { ShopStore } from '../core/shop.store';
 import { ToastService } from '../core/toast.service';
-import { InrPipe, QtyPipe } from '../shared/pipes';
+import { InrPipe, ProductNamePipe, QtyPipe } from '../shared/pipes';
 import { EmptyStateComponent, copyText } from '../shared/ui.components';
 import { BillSummaryComponent, deliveryFeeFor } from './bill-summary.component';
 import { OrderPlacedDialogComponent } from './order-placed-dialog.component';
@@ -20,7 +20,7 @@ const KEY = 'fh_checkout_key';
 
 @Component({
   selector: 'app-checkout',
-  imports: [FormsModule, RouterLink, LucideAngularModule, InrPipe, QtyPipe, EmptyStateComponent, BillSummaryComponent, OrderPlacedDialogComponent],
+  imports: [FormsModule, RouterLink, LucideAngularModule, InrPipe, ProductNamePipe, QtyPipe, EmptyStateComponent, BillSummaryComponent, OrderPlacedDialogComponent],
   template: `
     <div class="container page-enter">
       <header class="page-head">
@@ -65,7 +65,7 @@ const KEY = 'fh_checkout_key';
               @if (showItems()) {
                 <ul class="items">
                   @for (i of cart.items(); track i.product.id) {
-                    <li><span>{{ i.product.name }} <small class="muted">× {{ i.quantity | qty: i.product.unit }}</small></span><span class="tabular">{{ i.lineTotal | inr }}</span></li>
+                    <li><span>{{ i.product | productName }} <small class="muted">× {{ i.quantity | qty: i.product.unit }}</small></span><span class="tabular">{{ i.lineTotal | inr }}</span></li>
                   }
                 </ul>
               }

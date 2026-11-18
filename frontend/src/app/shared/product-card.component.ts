@@ -4,7 +4,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { CartStore, maxOrderable } from '../core/cart.store';
 import { formatQty } from '../core/format';
 import { Product } from '../core/models';
-import { InrPipe, QtyPipe, UnitPipe } from './pipes';
+import { InrPipe, ProductNamePipe, QtyPipe, UnitPipe } from './pipes';
 import { QtyStepperComponent } from './qty-stepper.component';
 
 const isStep = (q: number, step: number) => step <= 0 || Math.abs(q / step - Math.round(q / step)) < 1e-6;
@@ -24,12 +24,12 @@ export function defaultPreset(p: Product, options: number[]): number {
 
 @Component({
   selector: 'app-product-card',
-  imports: [RouterLink, LucideAngularModule, InrPipe, QtyPipe, UnitPipe, QtyStepperComponent],
+  imports: [RouterLink, LucideAngularModule, InrPipe, ProductNamePipe, QtyPipe, UnitPipe, QtyStepperComponent],
   template: `
     @let p = product();
     <article class="pcard" [class.sold-out]="soldOut()" [class.just-added]="justAdded()">
-      <a class="media" [routerLink]="preview() ? null : ['/product', p.id]" [attr.aria-label]="p.name">
-        <img [src]="p.imageUrl" [alt]="p.name" loading="lazy" decoding="async" />
+      <a class="media" [routerLink]="preview() ? null : ['/product', p.id]" [attr.aria-label]="p | productName">
+        <img [src]="p.imageUrl" [alt]="p | productName" loading="lazy" decoding="async" />
         @if (soldOut()) {
           <div class="stamp"><span>Sold out</span></div>
         } @else if (p.isFeatured) {
@@ -41,7 +41,7 @@ export function defaultPreset(p: Product, options: number[]): number {
       </a>
 
       <div class="body">
-        <h3 class="name">{{ p.name }}</h3>
+        <h3 class="name">{{ p.name }}@if (p.localName) {<span class="te"> / {{ p.localName }}</span>}</h3>
         <div class="price">
           <span class="amount">{{ p.price | inr }}</span>
           <span class="per">/ {{ p.unit | unit }}</span>
@@ -96,7 +96,8 @@ export function defaultPreset(p: Product, options: number[]): number {
     }
 
     .body { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 12px; flex: 1; }
-    .name { font-size: 15px; font-weight: 700; font-family: var(--font-ui); color: var(--ink); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .name { font-size: 15px; font-weight: 700; font-family: var(--font-ui); color: var(--ink); line-height: 1.3; min-height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+    .name .te { font-weight: 600; color: var(--muted); }
     .price { display: flex; align-items: baseline; gap: 4px; }
     .amount { font-family: var(--font-display); font-weight: 600; font-size: 20px; color: var(--forest-900); letter-spacing: -0.01em; }
     .per { font-size: 12.5px; color: var(--muted); font-weight: 500; }

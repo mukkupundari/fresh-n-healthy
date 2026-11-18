@@ -66,6 +66,11 @@ const UNIT_DEFAULTS: Record<ProductUnit, { min: number; step: number; low: numbe
                 @if (err('name')) { <span class="error-text">{{ err('name') }}</span> }
               </div>
               <div class="field">
+                <label class="label" for="plocal">Telugu name <span class="muted">(optional)</span></label>
+                <input id="plocal" class="input" name="localName" maxlength="100" lang="te" placeholder="e.g. టమాటా" [ngModel]="f.localName" (ngModelChange)="onLocalName($event)" />
+                <span class="hint">Shown as "{{ f.name || 'Tomato' }} / {{ f.localName || 'టమాటా' }}"</span>
+              </div>
+              <div class="field">
                 <label class="label" for="pcat">Category</label>
                 <select id="pcat" class="select" name="categoryId" [class.invalid]="err('categoryId')" [(ngModel)]="f.categoryId" (ngModelChange)="touch()">
                   <option [ngValue]="0" disabled>Choose a category</option>
@@ -75,7 +80,7 @@ const UNIT_DEFAULTS: Record<ProductUnit, { min: number; step: number; low: numbe
               </div>
               <div class="field span-2">
                 <label class="label" for="pdesc">Description <span class="muted">(optional)</span></label>
-                <textarea id="pdesc" class="textarea" name="description" maxlength="1000" rows="3" placeholder="Where it's from, taste, best usesâ€¦" [(ngModel)]="f.description" (ngModelChange)="touch()"></textarea>
+                <textarea id="pdesc" class="textarea" name="description" maxlength="1000" rows="3" placeholder="Where it's from, taste, best uses…" [(ngModel)]="f.description" (ngModelChange)="touch()"></textarea>
               </div>
             </div>
           </section>
@@ -94,7 +99,7 @@ const UNIT_DEFAULTS: Record<ProductUnit, { min: number; step: number; low: numbe
               <div class="field">
                 <label class="label" for="pprice">Price per {{ unitWord() }}</label>
                 <div class="input-group">
-                  <span class="prefix">â‚¹</span>
+                  <span class="prefix">₹</span>
                   <input id="pprice" class="input has-prefix big tabular" name="price" type="number" inputmode="decimal" min="0" step="0.5" [class.invalid]="err('price')" [(ngModel)]="f.price" (ngModelChange)="touch()" />
                   <span class="suffix per">/ {{ unitShort() }}</span>
                 </div>
@@ -184,7 +189,7 @@ const UNIT_DEFAULTS: Record<ProductUnit, { min: number; step: number; low: numbe
         @for (ph of library; track ph.key) {
           <button type="button" class="lib-item" [class.selected]="f.imageUrl === url(ph.key)" (click)="pick(ph)">
             <img [src]="url(ph.key)" [alt]="ph.name" loading="lazy" />
-            <span>{{ ph.name }}</span>
+            <span>{{ ph.name }} / {{ ph.te }}</span>
           </button>
         }
       </div>
@@ -272,7 +277,9 @@ export class ProductFormPage {
   private version = signal(0);
   private imageChosenByUser = false;
 
-  f = { name: '', description: '', categoryId: 0, imageUrl: '', unit: 'Kg' as ProductUnit, price: null as number | null, stock: null as number | null, min: 0.25, step: 0.25, low: 5, isActive: true, isFeatured: false };
+  private localNameEdited = false;
+
+  f = { name: '', localName: '', description: '', categoryId: 0, imageUrl: '', unit: 'Kg' as ProductUnit, price: null as number | null, stock: null as number | null, min: 0.25, step: 0.25, low: 5, isActive: true, isFeatured: false };
 
   readonly isEdit = computed(() => !!this.id() && this.id() !== 'new');
   readonly unitWord = computed(() => { this.version(); return { Kg: 'kg', Piece: 'piece', Bunch: 'bunch', Pack: 'pack' }[this.f.unit]; });
@@ -283,7 +290,7 @@ export class ProductFormPage {
     const cat = this.categories().find((c) => c.id === this.f.categoryId);
     return {
       id: o?.id ?? 0, shopId: o?.shopId ?? 0, categoryId: this.f.categoryId, categoryName: cat?.name ?? '', categorySlug: cat?.slug ?? '',
-      name: this.f.name || 'Vegetable name', description: this.f.description || null,
+      name: this.f.name || 'Vegetable name', localName: this.f.localName.trim() || null, description: this.f.description || null,
       imageUrl: this.f.imageUrl || '/images/catalog/tomato.jpg', unit: this.f.unit, price: Number(this.f.price) || 0,
       stockQuantity: o ? o.stockQuantity : Number(this.f.stock) || 0, minOrderQuantity: Number(this.f.min) || 0, stepQuantity: Number(this.f.step) || 0,
       lowStockThreshold: Number(this.f.low) || 0, isActive: this.f.isActive, isFeatured: this.f.isFeatured, sortOrder: 0, updatedAt: '',
@@ -309,7 +316,8 @@ export class ProductFormPage {
       if (this.isEdit()) {
         const p = await firstValueFrom(this.api.product(Number(this.id())));
         this.original.set(p);
-        this.f = { name: p.name, description: p.description ?? '', categoryId: p.categoryId, imageUrl: p.imageUrl, unit: p.unit, price: p.price, stock: null,
+        this.localNameEdited = !!p.localName;
+        this.f = { name: p.name, localName: p.localName ?? '', description: p.description ?? '', categoryId: p.categoryId, imageUrl: p.imageUrl, unit: p.unit, price: p.price, stock: null,
           min: p.minOrderQuantity, step: p.stepQuantity, low: p.lowStockThreshold, isActive: p.isActive, isFeatured: p.isFeatured };
         this.imageChosenByUser = true;
       }
@@ -325,8 +333,9 @@ export class ProductFormPage {
   onName(name: string) {
     this.f.name = name;
     this.touch();
-    if (this.imageChosenByUser) return;
     const match = matchTemplate(name);
+    if (!this.localNameEdited) this.f.localName = match?.te ?? '';
+    if (this.imageChosenByUser) return;
     if (match) {
       this.f.imageUrl = catalogPhoto(match.key);
       this.autoPicked.set(true);
@@ -335,6 +344,12 @@ export class ProductFormPage {
       this.f.imageUrl = '';
       this.autoPicked.set(false);
     }
+  }
+
+  onLocalName(value: string) {
+    this.f.localName = value;
+    this.localNameEdited = !!value.trim();
+    this.touch();
   }
 
   private categoryId(slug: CategorySlug): number {
@@ -346,6 +361,7 @@ export class ProductFormPage {
     this.imageChosenByUser = true;
     this.autoPicked.set(false);
     if (!this.f.name.trim()) this.f.name = ph.name;
+    if (!this.localNameEdited && !this.f.localName) this.f.localName = ph.te;
     if (!this.f.categoryId) this.f.categoryId = this.categoryId(ph.category);
     this.libraryOpen.set(false);
     this.touch();
@@ -387,8 +403,8 @@ export class ProductFormPage {
     const e: Record<string, string> = {};
     if (f.name.trim().length < 2) e['name'] = 'Enter the vegetable name.';
     if (!f.categoryId) e['categoryId'] = 'Choose a category.';
-    if (!f.imageUrl) e['imageUrl'] = 'Add a photo â€” upload one or pick from the library.';
-    if (!(Number(f.price) > 0)) e['price'] = 'Enter a price greater than â‚¹0.';
+    if (!f.imageUrl) e['imageUrl'] = 'Add a photo — upload one or pick from the library.';
+    if (!(Number(f.price) > 0)) e['price'] = 'Enter a price greater than ₹0.';
     if (!this.isEdit() && (f.stock === null || Number(f.stock) < 0)) e['stockQuantity'] = 'Enter the stock you have (0 if none yet).';
     if (!(Number(f.step) > 0)) e['stepQuantity'] = 'Step must be greater than 0.';
     if (!(Number(f.min) > 0)) e['minOrderQuantity'] = 'Minimum must be greater than 0.';
@@ -408,7 +424,7 @@ export class ProductFormPage {
     }
     const f = this.f;
     const body: SaveProductRequest = {
-      name: f.name.trim(), description: f.description.trim() || null, categoryId: f.categoryId, imageUrl: f.imageUrl, unit: f.unit,
+      name: f.name.trim(), localName: f.localName.trim() || null, description: f.description.trim() || null, categoryId: f.categoryId, imageUrl: f.imageUrl, unit: f.unit,
       price: Number(f.price), stockQuantity: this.isEdit() ? null : Number(f.stock), minOrderQuantity: Number(f.min), stepQuantity: Number(f.step),
       lowStockThreshold: Number(f.low), isActive: f.isActive, isFeatured: f.isFeatured,
     };

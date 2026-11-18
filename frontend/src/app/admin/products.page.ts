@@ -9,7 +9,7 @@ import { Category, Product } from '../core/models';
 import { AdminRealtime } from '../core/realtime';
 import { ToastService } from '../core/toast.service';
 import { BottomSheetComponent } from '../shared/bottom-sheet.component';
-import { InrPipe, QtyPipe, UnitPipe } from '../shared/pipes';
+import { InrPipe, ProductNamePipe, QtyPipe, UnitPipe } from '../shared/pipes';
 import { EmptyStateComponent } from '../shared/ui.components';
 import { StockSheetComponent } from './stock-sheet.component';
 
@@ -24,7 +24,7 @@ export function stockState(p: Product): { tone: 'green' | 'amber' | 'red' | 'neu
 
 @Component({
   selector: 'app-admin-products',
-  imports: [FormsModule, RouterLink, LucideAngularModule, InrPipe, QtyPipe, UnitPipe, EmptyStateComponent, StockSheetComponent, BottomSheetComponent],
+  imports: [FormsModule, RouterLink, LucideAngularModule, InrPipe, ProductNamePipe, QtyPipe, UnitPipe, EmptyStateComponent, StockSheetComponent, BottomSheetComponent],
   template: `
     <header class="page-header">
       <div>
@@ -76,7 +76,7 @@ export function stockState(p: Product): { tone: 'green' | 'amber' | 'red' | 'neu
                 <td>
                   <a class="cell-main" [routerLink]="['/admin/products', p.id]">
                     <img class="thumb" [src]="p.imageUrl" alt="" />
-                    <div><strong>{{ p.name }}</strong><small>{{ p.categoryName }}</small></div>
+                    <div><strong>{{ p | productName }}</strong><small>{{ p.categoryName }}</small></div>
                   </a>
                 </td>
                 <td class="tabular"><strong>{{ p.price | inr }}</strong> <span class="muted">/ {{ p.unit | unit }}</span></td>
@@ -117,7 +117,7 @@ export function stockState(p: Product): { tone: 'green' | 'amber' | 'red' | 'neu
             <a class="m-top" [routerLink]="['/admin/products', p.id]">
               <img class="thumb lg" [src]="p.imageUrl" alt="" />
               <div class="m-info">
-                <strong>{{ p.name }} @if (p.isFeatured) { <lucide-icon name="star" [size]="13" class="fstar" /> }</strong>
+                <strong>{{ p | productName }} @if (p.isFeatured) { <lucide-icon name="star" [size]="13" class="fstar" /> }</strong>
                 <span class="tabular">{{ p.price | inr }} <span class="muted">/ {{ p.unit | unit }}</span></span>
                 <span class="m-stock"><span class="badge" [class]="'badge ' + st.tone">{{ st.label }}</span> <span class="tabular muted">{{ p.stockQuantity | qty: p.unit }}</span></span>
               </div>
@@ -219,7 +219,7 @@ export class AdminProductsPage implements OnInit {
     const q = this.search().trim().toLowerCase();
     const cat = this.categoryId();
     const match = this.matches[this.filter()];
-    return this.products().filter((p) => match(p) && (!cat || p.categoryId === cat) && (!q || p.name.toLowerCase().includes(q)));
+    return this.products().filter((p) => match(p) && (!cat || p.categoryId === cat) && (!q || p.name.toLowerCase().includes(q) || !!p.localName?.includes(q)));
   });
 
   constructor() {

@@ -10,6 +10,7 @@ import { CategorySlug, VEGETABLE_CATALOG, catalogPhoto } from './vegetable-catal
 
 interface Row {
   key: string;
+  te: string;
   category: CategorySlug;
   description: string;
   step: number;
@@ -74,6 +75,7 @@ const UNIT_RULES: Record<ProductUnit, { min: number; step: number; low: number }
             <img class="thumb" [src]="photo(r.key)" [alt]="r.name" loading="lazy" />
             <div class="name">
               <input class="input sm" [ngModel]="r.name" (ngModelChange)="edit(r, 'name', $event)" [disabled]="r.owned" maxlength="100" [attr.aria-label]="'Name for ' + r.key" />
+              <input class="input sm te" lang="te" [ngModel]="r.te" (ngModelChange)="edit(r, 'te', $event)" [disabled]="r.owned" maxlength="100" placeholder="Telugu name" [attr.aria-label]="'Telugu name for ' + r.key" />
               @if (r.owned) {
                 <span class="tag">Already in your shop</span>
               } @else {
@@ -145,6 +147,7 @@ const UNIT_RULES: Record<ProductUnit, { min: number; step: number; low: number }
     .name { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
     .input.sm { height: 38px; padding: 0 10px; font-size: 14px; border-radius: 10px; }
     .name .input { font-weight: 700; }
+    .name .input.te { font-weight: 500; color: var(--muted); }
     .unit { align-self: flex-start; border: 0; background: none; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--leaf-600); padding: 0; cursor: pointer; }
     .tag { font-size: 12px; font-weight: 700; color: var(--muted); }
     .money { position: relative; display: flex; align-items: center; }
@@ -201,7 +204,7 @@ export class QuickAddPage {
       if (cat !== 'all' && r.category !== cat) return false;
       if (!q) return true;
       const t = VEGETABLE_CATALOG.find((v) => v.key === r.key);
-      return r.name.toLowerCase().includes(q) || !!t?.keywords.some((k) => k.includes(q));
+      return r.name.toLowerCase().includes(q) || r.te.includes(q) || !!t?.keywords.some((k) => k.includes(q));
     });
   });
   readonly selectableShown = computed(() => this.shown().filter((r) => !r.owned));
@@ -224,7 +227,7 @@ export class QuickAddPage {
       const owned = new Set(products.map((p) => p.name.trim().toLowerCase()));
       const ownedPhotos = new Set(products.map((p) => p.imageUrl));
       this.rows.set(VEGETABLE_CATALOG.map((t) => ({
-        key: t.key, category: t.category, description: t.description, step: t.step, name: t.name, unit: t.unit, price: t.price, stock: t.stock,
+        key: t.key, te: t.te, category: t.category, description: t.description, step: t.step, name: t.name, unit: t.unit, price: t.price, stock: t.stock,
         selected: false, owned: owned.has(t.name.toLowerCase()) || ownedPhotos.has(catalogPhoto(t.key)),
       })).sort((a, b) => Number(a.owned) - Number(b.owned)));
     } catch (e) {
@@ -242,7 +245,7 @@ export class QuickAddPage {
     }
   }
 
-  edit(r: Row, field: 'name' | 'unit' | 'price' | 'stock', value: string | number | null) {
+  edit(r: Row, field: 'name' | 'te' | 'unit' | 'price' | 'stock', value: string | number | null) {
     this.update(r.key, (cur) => {
       const next: Partial<Row> = { [field]: value, selected: true };
       if (field === 'unit' && value !== 'Kg' && cur.stock !== null) next.stock = Math.floor(Number(cur.stock));
@@ -294,7 +297,7 @@ export class QuickAddPage {
       const rules = UNIT_RULES[r.unit];
       const step = r.unit === 'Kg' ? r.step : rules.step;
       return {
-        name: r.name.trim(), description: r.description, categoryId: this.categories().find((c) => c.slug === r.category)?.id ?? 0,
+        name: r.name.trim(), localName: r.te.trim() || null, description: r.description, categoryId: this.categories().find((c) => c.slug === r.category)?.id ?? 0,
         imageUrl: catalogPhoto(r.key), unit: r.unit, price: Number(r.price), stockQuantity: Number(r.stock),
         minOrderQuantity: r.unit === 'Kg' ? Math.max(step, rules.min) : rules.min, stepQuantity: step, lowStockThreshold: rules.low,
         isActive: true, isFeatured: false,

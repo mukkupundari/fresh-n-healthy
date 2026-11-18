@@ -6,7 +6,7 @@ namespace FreshMarket.Api.Contracts;
 public static class Mapping
 {
     public static readonly Expression<Func<Product, ProductDto>> ProductProjection = p => new ProductDto(
-        p.Id, p.ShopId, p.CategoryId, p.Category!.Name, p.Category.Slug, p.Name, p.Description, p.ImageUrl, p.Unit, p.Price,
+        p.Id, p.ShopId, p.CategoryId, p.Category!.Name, p.Category.Slug, p.Name, p.LocalName, p.Description, p.ImageUrl, p.Unit, p.Price,
         p.StockQuantity, p.MinOrderQuantity, p.StepQuantity, p.LowStockThreshold, p.IsActive, p.IsFeatured, p.SortOrder, p.UpdatedAt);
 
     public static ShopPublicDto ToPublicDto(this Shop s) => new(

@@ -407,6 +407,10 @@ namespace FreshMarket.Api.Data.Migrations
                     b.Property<bool>("IsFeatured")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("LocalName")
+                        .HasMaxLength(100)
+                        .HasColumnType("citext");
+
                     b.Property<decimal>("LowStockThreshold")
                         .HasPrecision(12, 3)
                         .HasColumnType("numeric(12,3)");
