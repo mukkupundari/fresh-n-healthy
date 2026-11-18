@@ -1,0 +1,24 @@
+# .NET build output
+bin/
+obj/
+*.user
+.vs/
+
+# Node / Angular (see also frontend/.gitignore)
+node_modules/
+dist/
+.angular/
+
+# Files uploaded at runtime (shop UPI QR codes, product photos)
+backend/FreshMarket.Api/wwwroot/uploads/
+
+# Logs, database backups, local env files
+*.log
+*.bak
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
