@@ -132,7 +132,8 @@ public class Product
     public int SortOrder { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    [Timestamp] public byte[] RowVersion { get; set; } = [];
+    /// <summary>Maps to Postgres' xmin system column, which changes on every update of the row.</summary>
+    [Timestamp] public uint Version { get; set; }
 }
 
 public class Order
@@ -203,5 +204,15 @@ public class StockMovement
     public int? OrderId { get; set; }
     [MaxLength(300)] public string? Note { get; set; }
     [MaxLength(120)] public string CreatedBy { get; set; } = "";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>An uploaded image (UPI QR, product photo, logo). Kept in the database so uploads survive redeploys on hosts with ephemeral disks.</summary>
+public class StoredFile
+{
+    /// <summary>Path below /uploads, e.g. "qr/3f2a….png".</summary>
+    [MaxLength(200)] public string Path { get; set; } = "";
+    [MaxLength(60)] public string ContentType { get; set; } = "";
+    public byte[] Data { get; set; } = [];
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

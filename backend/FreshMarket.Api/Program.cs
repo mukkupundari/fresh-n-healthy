@@ -9,6 +9,7 @@ using FreshMarket.Api.Realtime;
 using FreshMarket.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,12 +26,26 @@ builder.Services.Configure<JwtOptions>(config.GetSection("Jwt"));
 builder.Services.Configure<OtpOptions>(config.GetSection("Otp"));
 builder.Services.Configure<StorageOptions>(config.GetSection("Storage"));
 
-builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(config.GetConnectionString("Default")));
+var connectionString = Database.ResolveConnectionString(config)
+    ?? throw new InvalidOperationException("Set ConnectionStrings__Default (or DATABASE_URL) to a Postgres connection string.");
+builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connectionString));
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<IPasswordHasher<AdminUser>, PasswordHasher<AdminUser>>();
-builder.Services.AddSingleton<IImageStorage, LocalImageStorage>();
+if (string.Equals(config["Storage:Provider"], "Local", StringComparison.OrdinalIgnoreCase))
+    builder.Services.AddSingleton<IImageStorage, LocalImageStorage>();
+else
+    builder.Services.AddScoped<IImageStorage, DatabaseImageStorage>();
+
+// Behind Render's proxy (and Vercel's rewrite in front of it) the client IP and scheme arrive in X-Forwarded-* headers.
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    o.ForwardLimit = config.GetValue("ForwardedHeaders:ForwardLimit", 2);
+    o.KnownNetworks.Clear();
+    o.KnownProxies.Clear();
+});
 builder.Services.AddSms(config);
 builder.Services.AddSingleton<IStoreNotifier, SignalRStoreNotifier>();
 builder.Services.AddSingleton<IAuthorizationHandler, ActiveShopHandler>();
@@ -115,6 +130,7 @@ using (var scope = app.Services.CreateScope())
         await SeedData.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordHasher<AdminUser>>());
 }
 
+app.UseForwardedHeaders();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
 {
@@ -129,6 +145,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<StoreHub>("/hubs/store");
+app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 app.MapFallbackToFile("index.html");
 
 app.Run();

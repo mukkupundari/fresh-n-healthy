@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: fresh-n-healthy-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: singapore
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: ConnectionStrings__Default
+        sync: false
+      - key: Cors__Origins__0
+        sync: false
+      - key: App__PublicUrl
+        sync: false
+      - key: Jwt__SigningKey
+        generateValue: true
+      - key: Otp__Pepper
+        generateValue: true
+      - key: Otp__DevMode
+        value: "true"
+      - key: Seed__Enabled
+        value: "false"

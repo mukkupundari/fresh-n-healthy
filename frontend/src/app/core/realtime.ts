@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { AdminAuth } from './auth';
 import { Product } from './models';
 
 export function createHub(tokenFactory?: () => string | null): HubConnection {
   return new HubConnectionBuilder()
-    .withUrl('/hubs/store', tokenFactory ? { accessTokenFactory: () => tokenFactory() ?? '' } : {})
+    .withUrl(`${environment.hubOrigin}/hubs/store`, tokenFactory ? { accessTokenFactory: () => tokenFactory() ?? '' } : {})
     .withAutomaticReconnect([0, 2000, 5000, 10000, 20000, 30000])
     .configureLogging(LogLevel.Warning)
     .build();

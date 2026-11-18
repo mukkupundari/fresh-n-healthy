@@ -17,12 +17,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<OrderStatusHistory> OrderStatusHistory => Set<OrderStatusHistory>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
         builder.Properties<decimal>().HavePrecision(12, 3);
         builder.Properties<decimal?>().HavePrecision(12, 3);
-        // SQL Server datetime2 has no kind; all timestamps are stored as UTC so clients must receive them with a "Z".
+        // Usernames, emails, vegetable names and searches are matched without regard to letter case.
+        builder.Properties<string>().HaveColumnType("citext");
+        // Postgres timestamptz only accepts UTC values; everything is stored as UTC so clients receive it with a "Z".
         builder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
         builder.Properties<DateTime?>().HaveConversion<UtcDateTimeConverter>();
     }
@@ -33,6 +36,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        b.HasPostgresExtension("citext");
+
+        b.Entity<StoredFile>(e =>
+        {
+            e.HasKey(x => x.Path);
+            e.Property(x => x.Data).HasColumnType("bytea");
+        });
+
         b.Entity<Shop>(e =>
         {
             e.HasIndex(x => x.Slug).IsUnique();
@@ -59,7 +70,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         b.Entity<Product>(e =>
         {
-            e.ToTable(t => t.HasCheckConstraint("CK_Products_Stock_NonNegative", "[StockQuantity] >= 0"));
+            e.ToTable(t => t.HasCheckConstraint("CK_Products_Stock_NonNegative", "\"StockQuantity\" >= 0"));
             e.HasIndex(x => new { x.ShopId, x.Name }).IsUnique();
             e.Property(x => x.Price).HasPrecision(10, 2);
             e.HasOne(x => x.Shop).WithMany(s => s.Products).HasForeignKey(x => x.ShopId).OnDelete(DeleteBehavior.Cascade);
