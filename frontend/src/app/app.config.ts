@@ -4,6 +4,7 @@ import { provideRouter, withComponentInputBinding, withInMemoryScrolling, withVi
 import { LucideAngularModule } from 'lucide-angular';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth';
+import { wakeInterceptor } from './core/wake';
 import { APP_ICONS } from './shared/icons';
 
 export const appConfig: ApplicationConfig = {
@@ -15,7 +16,7 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
       withViewTransitions({ skipInitialTransition: true }),
     ),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, wakeInterceptor])),
     importProvidersFrom(LucideAngularModule.pick(APP_ICONS)),
   ],
 };
